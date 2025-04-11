@@ -26,5 +26,7 @@ You can use [uefi-run](https://github.com/Richard-W/uefi-run) to run the example
 ```console
 $ cargo install uefi-run
 $ cargo +nightly build --target=x86_64-unknown-uefi
-$ uefi-run -d target/x86_64-unknown-uefi/debug/basic.efi
+$ uefi-run -d target/x86_64-unknown-uefi/debug/basic.efi -- -enable-kvm
 ```
+
+_Note: if your environment doesn't support KVM, you will need to remove the `-enable-kvm` option._
