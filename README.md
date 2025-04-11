@@ -5,6 +5,9 @@ Provides crates useful for building TUIs in a UEFI application or loader:
 * `ratatui-uefi`: implements an output backend usable with [ratatui](https://github.com/ratatui/ratatui)
 * `terminput-uefi`: implements an input backend usable with [terminput](https://github.com/aschey/terminput) 
 
+![image](https://github.com/user-attachments/assets/29a559ff-f2c3-4059-8725-95602fdcba63)
+
+
 ## Build
 
 Currently requires building using nightly:
