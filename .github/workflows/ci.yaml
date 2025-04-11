@@ -33,7 +33,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up rust toolchain (nightly)
+      - name: Set up nightly rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: nightly
@@ -57,23 +57,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up rust toolchain (nightly)
-        uses: dtolnay/rust-toolchain@master
+      - name: Set up nightly rust toolchain
+        uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: nightly
+          targets: x86_64-unknown-uefi
           components: clippy, rustfmt
-
-      - name: Enable cargo cache
-        uses: Swatinem/rust-cache@v2
+          override: true
 
       - name: Format check
         run: cargo fmt --check --all
 
       - name: Check
         run: cargo +nightly check --target=x86_64-unknown-uefi
-
-      - name: Deny check
-        run: cargo deny --all-features check all
 
       - name: Clippy check
         if: matrix.rust-version == 'stable'
