@@ -2,6 +2,7 @@
 name = "terminput-uefi"
 version = "0.1.0"
 description = "terminput implementation for UEFI"
+authors.workspace = true
 readme.workspace = true
 license.workspace = true
 edition.workspace = true

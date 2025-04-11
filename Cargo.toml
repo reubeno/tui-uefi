@@ -3,6 +3,7 @@ resolver = "3"
 members = ["ratatui-uefi", "terminput-uefi", "examples/*"]
 
 [workspace.package]
+authors = ["reuben olinsky"]
 readme = "README.md"
 license = "MIT"
 edition = "2024"
