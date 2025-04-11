@@ -54,17 +54,15 @@ impl ratatui::backend::Backend for UefiOutputBackend {
 
             self.output
                 .set_cursor_position(x as usize, y as usize)
-                .map_err(|_| {
-                    std::io::Error::new(std::io::ErrorKind::Other, "Failed to set cursor")
-                })?;
+                .map_err(|_| std::io::Error::other("Failed to set cursor"))?;
 
-            self.output.set_color(fg, bg).map_err(|_| {
-                std::io::Error::new(std::io::ErrorKind::Other, "Failed to set color")
-            })?;
+            self.output
+                .set_color(fg, bg)
+                .map_err(|_| std::io::Error::other("Failed to set color"))?;
 
-            self.output.write_str(cell.symbol()).map_err(|_| {
-                std::io::Error::new(std::io::ErrorKind::Other, "Failed to write character")
-            })?;
+            self.output
+                .write_str(cell.symbol())
+                .map_err(|_| std::io::Error::other("Failed to write character"))?;
         }
 
         Ok(())
@@ -101,25 +99,22 @@ impl ratatui::backend::Backend for UefiOutputBackend {
 
         self.output
             .set_cursor_position(pos.x as usize, pos.y as usize)
-            .map_err(|_| {
-                std::io::Error::new(std::io::ErrorKind::Other, "Failed to set cursor position")
-            })
+            .map_err(|_| std::io::Error::other("Failed to set cursor position"))
     }
 
     fn clear(&mut self) -> std::io::Result<()> {
         self.output
             .clear()
-            .map_err(|_| std::io::Error::new(std::io::ErrorKind::Other, "Failed to clear"))
+            .map_err(|_| std::io::Error::other("Failed to clear"))
     }
 
     fn size(&self) -> std::io::Result<ratatui::prelude::Size> {
-        let mode = self.output.current_mode().map_err(|_| {
-            std::io::Error::new(std::io::ErrorKind::Other, "Failed to get current mode")
-        })?;
+        let mode = self
+            .output
+            .current_mode()
+            .map_err(|_| std::io::Error::other("Failed to get current mode"))?;
 
-        let mode = mode.ok_or_else(|| {
-            std::io::Error::new(std::io::ErrorKind::Other, "No current mode available")
-        })?;
+        let mode = mode.ok_or_else(|| std::io::Error::other("No current mode available"))?;
 
         Ok(ratatui::prelude::Size {
             width: mode.columns() as u16,
