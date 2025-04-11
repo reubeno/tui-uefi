@@ -11,7 +11,13 @@ Provides crates useful for building TUIs (Terminal User Interfaces) in a [UEFI](
 
 ## Build
 
-Currently requires building using nightly:
+Firstly add the UEFI target to your toolchain:
+
+```console
+$ rustup target add x86_64-unknown-uefi
+```
+
+Then build using nightly:
 
 ```console
 $ cargo +nightly build --target=x86_64-unknown-uefi
