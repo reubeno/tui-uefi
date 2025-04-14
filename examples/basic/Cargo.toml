@@ -7,7 +7,7 @@ edition.workspace = true
 rust-version.workspace = true
 
 [dependencies]
-anyhow = "1.0.97"
+anyhow = "1.0.98"
 ratatui.workspace = true
 ratatui-uefi.workspace = true
 terminput.workspace = true
