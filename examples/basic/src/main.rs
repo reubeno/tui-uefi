@@ -1,5 +1,9 @@
-#![feature(uefi_std)]
+#![no_std]
+#![no_main]
 
+extern crate alloc;
+
+use alloc::vec;
 use anyhow::Result;
 use ratatui::{
     Frame, Terminal,
@@ -7,20 +11,11 @@ use ratatui::{
     text::Line,
     widgets::{Block, Borders, Paragraph},
 };
-use uefi::proto::console;
+use uefi::{Status, entry, println, proto::console};
 
 /// Performs the necessary setup code for the `uefi` crate.
 fn setup_uefi_crate() {
-    let system_table = std::os::uefi::env::system_table();
-    let image_handle = std::os::uefi::env::image_handle();
-
-    // Mandatory setup code for `uefi` crate.
-    unsafe {
-        uefi::table::set_system_table(system_table.as_ptr().cast());
-
-        let ih = uefi::Handle::from_ptr(image_handle.as_ptr().cast()).unwrap();
-        uefi::boot::set_image_handle(ih);
-    }
+    uefi::helpers::init().expect("Failed to initialize utilities");
 }
 
 fn create_ui() -> Result<(
@@ -111,27 +106,18 @@ fn run() -> Result<()> {
     Ok(())
 }
 
-fn setup_panic_handler() {
-    std::panic::set_hook(Box::new(|info| {
-        if let Some(location) = info.location() {
-            println!("Panic at {}:{}", location.file(), location.line());
-        } else {
-            println!("Panic occurred but no location information available.");
-        }
-    }));
-}
-
-fn main() {
-    // Basic required setup.
-    setup_panic_handler();
+#[entry]
+fn efi_main() -> Status {
     setup_uefi_crate();
 
     match run() {
         Ok(()) => {
             println!("Done.");
+            Status::SUCCESS
         }
         Err(e) => {
             println!("!!! error: {:?}", e);
+            Status::ABORTED
         }
     }
 }

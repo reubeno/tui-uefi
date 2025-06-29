@@ -1,3 +1,5 @@
+#![no_std]
+
 use uefi::{
     ResultExt,
     boot::{self, ScopedProtocol},

@@ -11,4 +11,5 @@ keywords.workspace = true
 
 [dependencies]
 ratatui.workspace = true
+thiserror = { version = "2", default-features = false }
 uefi.workspace = true
