@@ -1,6 +1,59 @@
-use std::fmt::Write;
+#![no_std]
 
+use core::fmt::{self, Write};
+
+use ratatui::prelude::backend::ClearType;
+use thiserror::Error;
 use uefi::{boot::ScopedProtocol, proto::console};
+
+/// Error returned by the [`UefiOutputBackend`]
+#[derive(Debug, Error, PartialEq)]
+pub enum Error {
+    #[error("failed to set cursor: {inner}")]
+    SetCursorPosition { inner: uefi::Error },
+    #[error("failed to set color: {inner}")]
+    SetColor { inner: uefi::Error },
+    #[error("failed to write character: {inner}")]
+    WriteCharacter { inner: fmt::Error },
+    #[error("failed to clear: {inner}")]
+    Clear { inner: uefi::Error },
+    #[error("failed to get current mode: {inner}")]
+    GetCurrentMode { inner: uefi::Error },
+    #[error("No current mode available")]
+    NoCurrentMode,
+    #[error("clear_type [{clear_type:?}] not supported with this backend")]
+    UnsupportedClear { clear_type: ClearType },
+}
+
+impl Error {
+    fn set_cursor_position(inner: uefi::Error) -> Self {
+        Error::SetCursorPosition { inner }
+    }
+
+    fn set_color(inner: uefi::Error) -> Self {
+        Error::SetColor { inner }
+    }
+
+    fn write_character(inner: fmt::Error) -> Self {
+        Error::WriteCharacter { inner }
+    }
+
+    fn clear(inner: uefi::Error) -> Self {
+        Error::Clear { inner }
+    }
+
+    fn get_current_mode(inner: uefi::Error) -> Self {
+        Error::GetCurrentMode { inner }
+    }
+
+    fn no_current_mode() -> Self {
+        Error::NoCurrentMode
+    }
+
+    fn unsupported_clear(clear_type: ClearType) -> Self {
+        Self::UnsupportedClear { clear_type }
+    }
+}
 
 /// Implements a backend for the `ratatui` crate suitable for use in a UEFI application
 /// or loader.
@@ -39,7 +92,9 @@ fn to_uefi_color(color: ratatui::style::Color) -> Option<console::text::Color> {
 }
 
 impl ratatui::backend::Backend for UefiOutputBackend {
-    fn draw<'a, I>(&mut self, content: I) -> std::io::Result<()>
+    type Error = Error;
+
+    fn draw<'a, I>(&mut self, content: I) -> Result<(), Error>
     where
         I: Iterator<Item = (u16, u16, &'a ratatui::buffer::Cell)>,
     {
@@ -49,40 +104,38 @@ impl ratatui::backend::Backend for UefiOutputBackend {
 
             if cell.modifier.contains(ratatui::style::Modifier::REVERSED) {
                 // Swap foreground and background colors.
-                std::mem::swap(&mut fg, &mut bg);
+                core::mem::swap(&mut fg, &mut bg);
             }
 
             self.output
                 .set_cursor_position(x as usize, y as usize)
-                .map_err(|_| std::io::Error::other("Failed to set cursor"))?;
+                .map_err(Error::set_cursor_position)?;
 
-            self.output
-                .set_color(fg, bg)
-                .map_err(|_| std::io::Error::other("Failed to set color"))?;
+            self.output.set_color(fg, bg).map_err(Error::set_color)?;
 
             self.output
                 .write_str(cell.symbol())
-                .map_err(|_| std::io::Error::other("Failed to write character"))?;
+                .map_err(Error::write_character)?;
         }
 
         Ok(())
     }
 
-    fn hide_cursor(&mut self) -> std::io::Result<()> {
+    fn hide_cursor(&mut self) -> Result<(), Error> {
         // Not supported on all platforms.
         let _ = self.output.enable_cursor(false);
 
         Ok(())
     }
 
-    fn show_cursor(&mut self) -> std::io::Result<()> {
+    fn show_cursor(&mut self) -> Result<(), Error> {
         // Not supported on all platforms.
         let _ = self.output.enable_cursor(true);
 
         Ok(())
     }
 
-    fn get_cursor_position(&mut self) -> std::io::Result<ratatui::prelude::Position> {
+    fn get_cursor_position(&mut self) -> Result<ratatui::prelude::Position, Error> {
         let (col, row) = self.output.cursor_position();
 
         Ok(ratatui::prelude::Position {
@@ -94,27 +147,35 @@ impl ratatui::backend::Backend for UefiOutputBackend {
     fn set_cursor_position<P: Into<ratatui::prelude::Position>>(
         &mut self,
         position: P,
-    ) -> std::io::Result<()> {
+    ) -> Result<(), Error> {
         let pos = position.into();
 
         self.output
             .set_cursor_position(pos.x as usize, pos.y as usize)
-            .map_err(|_| std::io::Error::other("Failed to set cursor position"))
+            .map_err(Error::set_cursor_position)
     }
 
-    fn clear(&mut self) -> std::io::Result<()> {
-        self.output
-            .clear()
-            .map_err(|_| std::io::Error::other("Failed to clear"))
+    fn clear(&mut self) -> Result<(), Error> {
+        self.output.clear().map_err(Error::clear)
     }
 
-    fn size(&self) -> std::io::Result<ratatui::prelude::Size> {
+    fn clear_region(&mut self, clear_type: ClearType) -> Result<(), Error> {
+        match clear_type {
+            ClearType::All => self.clear(),
+            ClearType::AfterCursor
+            | ClearType::BeforeCursor
+            | ClearType::CurrentLine
+            | ClearType::UntilNewLine => Err(Error::unsupported_clear(clear_type)),
+        }
+    }
+
+    fn size(&self) -> Result<ratatui::prelude::Size, Error> {
         let mode = self
             .output
             .current_mode()
-            .map_err(|_| std::io::Error::other("Failed to get current mode"))?;
+            .map_err(Error::get_current_mode)?;
 
-        let mode = mode.ok_or_else(|| std::io::Error::other("No current mode available"))?;
+        let mode = mode.ok_or_else(Error::no_current_mode)?;
 
         Ok(ratatui::prelude::Size {
             width: mode.columns() as u16,
@@ -122,7 +183,7 @@ impl ratatui::backend::Backend for UefiOutputBackend {
         })
     }
 
-    fn window_size(&mut self) -> std::io::Result<ratatui::backend::WindowSize> {
+    fn window_size(&mut self) -> Result<ratatui::backend::WindowSize, Error> {
         let size = self.size()?;
 
         // TODO: Fill out pixel dimensions?
@@ -135,7 +196,7 @@ impl ratatui::backend::Backend for UefiOutputBackend {
         })
     }
 
-    fn flush(&mut self) -> std::io::Result<()> {
+    fn flush(&mut self) -> Result<(), Error> {
         // No-op?
         Ok(())
     }
