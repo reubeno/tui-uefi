@@ -7,9 +7,9 @@ edition.workspace = true
 rust-version.workspace = true
 
 [dependencies]
-anyhow = "1.0.98"
+anyhow = { version = "1.0.98", default-features = false }
 ratatui.workspace = true
 ratatui-uefi.workspace = true
 terminput.workspace = true
 terminput-uefi.workspace = true
-uefi.workspace = true
+uefi = { workspace = true, features = ["global_allocator", "panic_handler"] }
