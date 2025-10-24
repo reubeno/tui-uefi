@@ -13,6 +13,6 @@ rust-version = "1.86.0"
 [workspace.dependencies]
 ratatui = { version = "0.29.0", default-features = false }
 ratatui-uefi = { path = "ratatui-uefi" }
-terminput = { version = "0.4.3", default-features = false }
+terminput = { version = "0.5.10", default-features = false }
 terminput-uefi = { path = "terminput-uefi" }
-uefi = { version = "0.34.1", features = ["alloc"] }
+uefi = { version = "0.35.0", features = ["alloc"] }
