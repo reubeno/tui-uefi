@@ -39,6 +39,8 @@ fn to_uefi_color(color: ratatui::style::Color) -> Option<console::text::Color> {
 }
 
 impl ratatui::backend::Backend for UefiOutputBackend {
+    type Error = std::io::Error;
+
     fn draw<'a, I>(&mut self, content: I) -> std::io::Result<()>
     where
         I: Iterator<Item = (u16, u16, &'a ratatui::buffer::Cell)>,
@@ -106,6 +108,18 @@ impl ratatui::backend::Backend for UefiOutputBackend {
         self.output
             .clear()
             .map_err(|_| std::io::Error::other("Failed to clear"))
+    }
+
+    fn clear_region(&mut self, clear_type: ratatui::backend::ClearType) -> std::io::Result<()> {
+        match clear_type {
+            ratatui::backend::ClearType::All => self.clear(),
+            ratatui::backend::ClearType::AfterCursor
+            | ratatui::backend::ClearType::BeforeCursor
+            | ratatui::backend::ClearType::CurrentLine
+            | ratatui::backend::ClearType::UntilNewLine => Err(std::io::Error::other(format!(
+                "clear type {clear_type:?} not supported with this backend"
+            ))),
+        }
     }
 
     fn size(&self) -> std::io::Result<ratatui::prelude::Size> {
