@@ -10,9 +10,9 @@ checksum = "683d7910e743518b0e34f1186f92494becacb047c7b6bf616c96772180fef923"
 
 [[package]]
 name = "anyhow"
-version = "1.0.103"
+version = "1.0.104"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2a4385e2e34eb35d6b3efe798b9eb88096925d87726c0798709bf56d9ed84af3"
+checksum = "330a5ed07fa54e4702c9d6c4174f74427fc0ef6e214bbd677ae50a5099946470"
 
 [[package]]
 name = "basic"
@@ -376,9 +376,9 @@ dependencies = [
 
 [[package]]
 name = "terminput"
-version = "0.5.14"
+version = "0.5.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8908e11ccbb43dca64278fb750affa925c3655112859c69d017e7b44f598165b"
+checksum = "33fe296cb813b5bad99a8eb911e6a08e48f0854ee1e8b427073e657a509a7097"
 dependencies = [
  "bitflags",
 ]
@@ -422,9 +422,9 @@ dependencies = [
 
 [[package]]
 name = "uefi"
-version = "0.39.0"
+version = "0.40.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a58ad7512f7c38b58aa536c3839dbb1d5a122d14a7e2245b06ded49edcb7585a"
+checksum = "2422138a1c4483f5d04081281ec841fb17f88cf1e2263b3b860fd455ab3a8d52"
 dependencies = [
  "bitflags",
  "cfg-if",
@@ -449,9 +449,9 @@ dependencies = [
 
 [[package]]
 name = "uefi-raw"
-version = "0.15.1"
+version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1a36f49db0b04a8dfd246a26ddf8d2526a2ffd8cf946ae7fe603fd0c5fbd2786"
+checksum = "0b86018f5a44661f30db808298ccfcbe326279239c4d17a347c5476065ff72c0"
 dependencies = [
  "bitflags",
  "uguid",
